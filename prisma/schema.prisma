@@ -1,0 +1,56 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  bio       String?
+  warnings  Int       @default(0)
+  muted     Boolean   @default(false)
+  roles     UserRole[]
+  badges    UserBadge[]
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  permissions String?
+  color       String?
+  icon        String?
+  users       UserRole[]
+}
+
+model Badge {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  icon  String?
+  users UserBadge[]
+}
+
+model UserBadge {
+  userId    Int
+  badgeId   Int
+  assignedAt DateTime @default(now())
+  user      User  @relation(fields: [userId], references: [id])
+  badge     Badge @relation(fields: [badgeId], references: [id])
+
+  @@id([userId, badgeId])
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id])
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
